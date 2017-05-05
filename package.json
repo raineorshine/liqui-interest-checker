@@ -1,0 +1,33 @@
+{
+  "name": "liqui-interest-checker",
+  "version": "0.0.0",
+  "description": "",
+  "license": "ISC",
+  "repository": "https://github.com/raineorshine/liqui-interest-checker",
+  "author": {
+    "name": "Raine Revere",
+    "email": "raineorshine@gmail.com",
+    "url": "https://github.com/raineorshine"
+  },
+  "engines": {
+    "node": ">=0.12.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "bin": {
+    "liqui-interest-checker": "bin.js"
+  },
+  "preferGlobal": true,
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*"
+  },
+  "dependencies": {
+    "commander": "*",
+    "get-stdin-promise": "*",
+    "isomorphic-fetch": "^2.2.1",
+    "node-notifier": "^5.1.2",
+    "standard": "^10.0.2"
+  }
+}
