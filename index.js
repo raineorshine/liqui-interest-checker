@@ -11,13 +11,8 @@ const liquiInterestRecordsUrl = 'https://liqui.io/Interest/Records'
 
 let lastEmailSent = 0
 
-function print (message) {
-  console.log(`[${new Date()}] ${message}`)
-}
-
-function error (message) {
-  console.error(`[${new Date()}] ${message}`)
-}
+const print = console.log
+const error = console.error
 
 function notify (message) {
   notifier.notify({

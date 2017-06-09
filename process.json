@@ -1,0 +1,5 @@
+{
+	"name": "liqui",
+	"script": "./bin.js",
+	"logDateFormat":  "YYYY-MM-DD HH:mm Z"
+}
