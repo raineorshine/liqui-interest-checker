@@ -5,14 +5,19 @@ const notifier = require('node-notifier')
 const config = require('./config.js')
 
 const ethCurrencyId = 12
-const pollingDelay = 10000 // ms
-const emailThrottleMinutes = 1
+const pollingDelaySeconds = 10
+const emailThrottleMinutes = 20
 const liquiInterestRecordsUrl = 'https://liqui.io/Interest/Records'
 
 let lastEmailSent = 0
 
 const print = console.log
 const error = console.error
+
+const mailgun = require('mailgun-js')({
+  apiKey: config.mailgunApiKey,
+  domain: config.mailgunDomain
+})
 
 function notify (message) {
   notifier.notify({
@@ -29,11 +34,6 @@ function email (subject, message) {
     print('Email already sent')
     return Promise.resolve()
   }
-
-  const mailgun = require('mailgun-js')({
-    apiKey: config.mailgunApiKey,
-    domain: config.mailgunDomain
-  })
 
   const data = {
     from: 'Liqui Notifier <me@samples.mailgun.org>',
@@ -52,7 +52,7 @@ function email (subject, message) {
   })
 }
 
-function handleResponse (res) {
+function handleJsonResponse (res) {
   if (res.status >= 400) {
     throw new Error('Bad response from server')
   }
@@ -61,7 +61,7 @@ function handleResponse (res) {
 
 function checkLiqui () {
   return fetch(liquiInterestRecordsUrl)
-    .then(handleResponse)
+    .then(handleJsonResponse)
     .then(results => {
       const eth = results.find(result => +result.CurrencyId === ethCurrencyId)
       const availableLoans = eth.MaxAmountLimit - eth.CurrentAmount
@@ -82,7 +82,7 @@ function checkLiquiRepeat () {
   })
   .catch(error)
   .then(() => {
-    setTimeout(checkLiquiRepeat, pollingDelay)
+    setTimeout(checkLiquiRepeat, pollingDelaySeconds * 1000)
   })
 }
 
