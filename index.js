@@ -1,9 +1,15 @@
 const fetch = require('isomorphic-fetch')
 const notifier = require('node-notifier')
 
+// store API keys in config that is not committed to repo
+const config = require('./config.js')
+
 const ethCurrencyId = 12
-const pollingDelay = 30000 // ms
+const pollingDelay = 10000 // ms
+const emailThrottleMinutes = 1
 const liquiInterestRecordsUrl = 'https://liqui.io/Interest/Records'
+
+let lastEmailSent = 0
 
 function print (message) {
   console.log(`[${new Date()}] ${message}`)
@@ -18,6 +24,36 @@ function notify (message) {
     title: 'Liqui Interest Checker',
     message,
     wait: true // doesn't seem to work
+  })
+}
+
+function email (subject, message) {
+
+  // only send one email every 10 minutes
+  if ((new Date).getTime() - lastEmailSent < 1000 * 60 * emailThrottleMinutes) {
+    print('Email already sent')
+    return Promise.resolve()
+  }
+
+  const mailgun = require('mailgun-js')({
+    apiKey: config.mailgunApiKey,
+    domain: config.mailgunDomain
+  })
+
+  const data = {
+    from: 'Liqui Notifier <me@samples.mailgun.org>',
+    to: 'raineorshine@gmail.com',
+    subject: subject,
+    text: message
+  }
+
+  return new Promise((resolve, reject) => {
+    mailgun.messages().send(data, (err, body) => {
+      if (err) return reject(err)
+      lastEmailSent = (new Date()).getTime()
+      print('Email sent')
+      resolve(body)
+    })
   })
 }
 
@@ -44,13 +80,13 @@ function checkLiquiRepeat () {
       const message = 'Available Loans: ' + availableLoans + ' ETH'
       notify(message)
       print(message)
+      return email('Liqui Loan Available', message)
     } else {
       print('No loans available.')
     }
-    setTimeout(checkLiquiRepeat, pollingDelay)
   })
-  .catch(err => {
-    error(err)
+  .catch(error)
+  .then(() => {
     setTimeout(checkLiquiRepeat, pollingDelay)
   })
 }
