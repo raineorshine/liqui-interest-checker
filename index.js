@@ -31,7 +31,6 @@ function email (subject, message) {
 
   // only send one email every 10 minutes
   if ((new Date).getTime() - lastEmailSent < 1000 * 60 * emailThrottleMinutes) {
-    print('Email already sent')
     return Promise.resolve()
   }
 
